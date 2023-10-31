@@ -1,0 +1,6 @@
+credentials/
+logs/
+files/
+plugins/
+config/
+airflow/
