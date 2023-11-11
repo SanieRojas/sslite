@@ -10,7 +10,7 @@ import plotly.express as px
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
 from google.cloud import bigquery, storage
 
@@ -28,8 +28,6 @@ nltk.download('averaged_perceptron_tagger', quiet=True)
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/opt/airflow/dags/subject-screener-402918-2e4cb86cc333.json"
 ##################################################################################################################
-
-
 
 def get_tokens(newsfeed):
     """ Clean text."""
@@ -67,20 +65,17 @@ def extract_entities(txt):
 def setup_engine(period, subject):
     """
     Set up the google engine to retrieve news of a given period.  Performs a search of news for any selected subject theme and, 
-    if prompted, saves it into a database. 
-    Documentation -> https://pypi.org/project/GoogleNews/
+    if prompted, saves it into a file
+    Documentation of the API wrapper -> https://pypi.org/project/GoogleNews/
 
     :period: defines how much time to search news for. 
     :type: 7d [quantity of days + "d"] 
 
-    :monitor: Yes if you want to keep your results. 
-    :type: Boolean
-
     :subject: Subject of interest
     :rtype: String
 
-    :return: Newsfeed dataframe, log date 
-    :rtype: pandas dataframe, date   
+    :return: filename of the output file
+    :rtype: string containing filename  
     """
     # Set up date
     id = str(datetime.now().timestamp())[:10]
@@ -97,6 +92,7 @@ def setup_engine(period, subject):
 
     #Save to dataframe 
     newsfeed = pd.DataFrame(results)
+    assert newsfeed.shape[0] >= 1
     newsfeed["log_date"] = time_stamp
     newsfeed["subject"] = subject
     columns_to_remove = ['desc','site','link','img','media','log_date']
@@ -105,14 +101,21 @@ def setup_engine(period, subject):
     newsfeed["tokens"] = newsfeed["title"].apply(get_tokens)
     newsfeed2 = get_scores(newsfeed)
     file_name = f'/opt/airflow/files/processed/raw_{subject}_{id}.parquet'
+    #file_name = f'raw_{subject}_{id}.parquet'
     newsfeed2.to_parquet(file_name, index=False)
 
     return file_name
+    #return newsfeed2
     #fin
 
 
-
 def save_to_gcs(**context):
+    '''Set up a function to save the extraction into a GCS Bucket. 
+
+    :context: brings the name of the file result of the function setup_engine 
+
+    :return: Does not have a return specified. 
+    '''
     # Carga el DataFrame desde XComs
     file_name = context['task_instance'].xcom_pull(task_ids='extract_and_load_to_df')
     ds = context['ds_nodash']
@@ -126,10 +129,13 @@ def save_to_gcs(**context):
     blob.upload_from_filename(file_name)
 
 
-
-
 def view_scores(**context):
-    # Crea un grafico de scores 
+    '''Set up a function to generate an HTML file that displays in a plot the results of the sentiments of news per day. 
+
+    :context: brings the name of the file result of the function setup_engine 
+
+    :return: Does not have a return specified. 
+    '''
     file_name = context['task_instance'].xcom_pull(task_ids='extract_and_load_to_df')
     ds = context['ds_nodash']
     df = pd.read_parquet(file_name)
@@ -149,7 +155,6 @@ def view_scores(**context):
     daily_score = px.scatter(df, x="datetime", y="score", title = f"News Sentiment Scores by day. This topic has an average score of: {average_score}, being 1 mostly positive and -1 mostly negative", color=df['score'] < 0, color_discrete_map={False: 'blue', True: 'red'})
     daily_score.write_html(f'/opt/airflow/files/processed/my_plot_{ds}.html')
 
-
 ###################################################################################################################
 default_args = {
     'owner': 'airflow',
@@ -158,7 +163,7 @@ default_args = {
 
 my_variables = {
     '10d': '10d',
-    'Israel Hamas Conflict': "Isral Hamas Conflict"
+    'selenium brain': "selenium brain"
 
 }
 

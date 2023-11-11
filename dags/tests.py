@@ -1,7 +1,7 @@
 '''testing the dataframe processing functions'''
 import unittest
 import pandas as pd
-from dags_edited import get_tokens, get_scores  # Replace 'my_module' with the actual name of the module containing your function
+from dags import get_tokens, get_scores  # Replace
 
 
 class TestGetTokens(unittest.TestCase):
