@@ -115,8 +115,28 @@ def save_to_gcs(**context):
     bucket_name = "subject-screener1"
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(f"raw_data/data{ds}.parquet")
+    future_name = f"raw_data/data.parquet"
+    blob = bucket.blob(future_name)
     blob.upload_from_filename(file_name)
+
+    return future_name
+
+def load_to_bq(**context):
+    client = bigquery.Client()
+    table_id = 'ssdataset.news-by-subject'
+    file_name = context['task_instance'].xcom_pull(task_ids='extract_and_load_to_df')
+    df = pd.read_parquet(file_name, engine='pyarrow')
+    job_config = bigquery.LoadJobConfig(
+        schema=[
+            bigquery.SchemaField("title", bigquery.enums.SqlTypeNames.STRING),
+            bigquery.SchemaField("date", bigquery.enums.SqlTypeNames.STRING),
+            bigquery.SchemaField("datetime", bigquery.enums.SqlTypeNames.DATETIME),
+            bigquery.SchemaField("subject", bigquery.enums.SqlTypeNames.STRING),
+            bigquery.SchemaField("tokens", bigquery.enums.SqlTypeNames.STRING),
+            bigquery.SchemaField("score", bigquery.enums.SqlTypeNames.FLOAT)])
+    job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
+    table = client.get_table(table_id)  # Make an API request.
+    print("Loaded {} rows and {} columns to {}".format(table.num_rows, len(table.schema), table_id))
 
 def view_scores(**context):
     '''Set up a function to generate an HTML file that displays in a plot the results of the sentiments of news per day. 
