@@ -36,7 +36,6 @@ task3 = PythonOperator(task_id='load_to_bq',
                        provide_context=True,
                        dag=dag)
 
-
 task4 = PythonOperator(task_id='view_scores', 
                        python_callable=view_scores, 
                        dag=dag)

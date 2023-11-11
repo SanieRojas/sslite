@@ -86,11 +86,28 @@ def setup_engine(period, subject):
     assert newsfeed.shape[0] >= 1
     newsfeed["log_date"] = time_stamp
     newsfeed["subject"] = subject
+    print(newsfeed.dtypes)
+    print("That´s the imported and stamped dataset")
     columns_to_remove = ['desc','site','link','img','media','log_date']
     columns_to_drop = [col for col in columns_to_remove if col in newsfeed.columns]
-    newsfeed.drop(columns=columns_to_drop, axis=1)
-    newsfeed["tokens"] = newsfeed["title"].apply(get_tokens)
-    newsfeed2 = get_scores(newsfeed)
+    newsfeed2 = newsfeed.drop(columns=columns_to_drop, axis=1)
+    newsfeed2["tokens"] = newsfeed2["title"].apply(get_tokens)
+    newsfeed2 = get_scores(newsfeed2)
+    print(newsfeed2.dtypes)
+    print("Types prior to typecasting")
+    #setting types
+
+    newsfeed2['datetime'] = pd.to_datetime(newsfeed2['datetime'])
+
+    newsfeed2['title'] = newsfeed2['title'].astype(str)
+    newsfeed2['date'] = newsfeed2['date'].astype(str)
+    newsfeed2['subject'] = newsfeed2['subject'].astype(str)
+    newsfeed2['tokens'] = newsfeed2['tokens'].astype(str)
+    newsfeed2['score'] = newsfeed2['score'].astype(float)
+
+    print(newsfeed2.dtypes)
+    print("That´s the final saved dataset")
+
     file_name = f'/opt/airflow/files/processed/raw_{subject}_{id}.parquet'
     #file_name = f'raw_{subject}_{id}.parquet'
     newsfeed2.to_parquet(file_name, index=False)
@@ -126,6 +143,7 @@ def load_to_bq(**context):
     table_id = 'ssdataset.news-by-subject'
     file_name = context['task_instance'].xcom_pull(task_ids='extract_and_load_to_df')
     df = pd.read_parquet(file_name, engine='pyarrow')
+    print (df.dtypes)
     job_config = bigquery.LoadJobConfig(
         schema=[
             bigquery.SchemaField("title", bigquery.enums.SqlTypeNames.STRING),
@@ -133,8 +151,12 @@ def load_to_bq(**context):
             bigquery.SchemaField("datetime", bigquery.enums.SqlTypeNames.DATETIME),
             bigquery.SchemaField("subject", bigquery.enums.SqlTypeNames.STRING),
             bigquery.SchemaField("tokens", bigquery.enums.SqlTypeNames.STRING),
-            bigquery.SchemaField("score", bigquery.enums.SqlTypeNames.FLOAT)])
+            bigquery.SchemaField("score", bigquery.enums.SqlTypeNames.FLOAT)], 
+            write_disposition="WRITE_APPEND")
+    
     job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
+    job.result()
+
     table = client.get_table(table_id)  # Make an API request.
     print("Loaded {} rows and {} columns to {}".format(table.num_rows, len(table.schema), table_id))
 
