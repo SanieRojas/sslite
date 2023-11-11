@@ -4,3 +4,5 @@ files/
 plugins/
 config/
 airflow/
+dags/subject-screener-402918-2e4cb86cc333.json
+tp_final/

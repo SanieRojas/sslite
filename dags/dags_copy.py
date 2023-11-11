@@ -26,7 +26,7 @@ nltk.download('maxent_ne_chunker', quiet=True)
 nltk.download('words', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/opt/airflow/dags/subject-screener-402918-c2016ea141c2.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/opt/airflow/dags/subject-screener-402918-2e4cb86cc333.json"
 ##################################################################################################################
 
 
