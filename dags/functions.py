@@ -1,14 +1,10 @@
-import pandas as pd
-import os 
 import re
-
 import nltk
 import pandas as pd
-import plotly.express as px
-from datetime import datetime
 import pandas_gbq
-from google.cloud import bigquery, storage
 from GoogleNews import GoogleNews
+from google.cloud import bigquery, storage
+
 from nltk import ne_chunk, pos_tag
 from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -19,6 +15,8 @@ nltk.download('maxent_ne_chunker', quiet=True)
 nltk.download('words', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 
+import plotly.express as px
+from datetime import datetime
 
 def get_tokens(newsfeed):
     """ Clean text."""
@@ -187,7 +185,6 @@ def view_scores(**context):
     daily_score = px.scatter(df, x="datetime", y="score", title = f"News Sentiment Scores by day. This topic has an average score of: {average_score}, being 1 mostly positive and -1 mostly negative", color=df['score'] < 0, color_discrete_map={False: 'blue', True: 'red'})
     daily_score.write_html(f'/opt/airflow/files/processed/my_plot_{ds}.html')
 
-#### WIP Function
 def generate_summary(**context):
     """Summarize scores by day & load them into BQ table"""
     # [START bigquery_pandas_gbq_read_gbq_legacy]
