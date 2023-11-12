@@ -6,7 +6,7 @@ import nltk
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
-
+import pandas_gbq
 from google.cloud import bigquery, storage
 from GoogleNews import GoogleNews
 from nltk import ne_chunk, pos_tag
@@ -139,6 +139,7 @@ def save_to_gcs(**context):
     return future_name
 
 def load_to_bq(**context):
+    ''' Load records retrieved by the setup_engine function into a BigQuery Table'''
     client = bigquery.Client()
     table_id = 'ssdataset.news-by-subject'
     file_name = context['task_instance'].xcom_pull(task_ids='extract_and_load_to_df')
@@ -185,3 +186,37 @@ def view_scores(**context):
 
     daily_score = px.scatter(df, x="datetime", y="score", title = f"News Sentiment Scores by day. This topic has an average score of: {average_score}, being 1 mostly positive and -1 mostly negative", color=df['score'] < 0, color_discrete_map={False: 'blue', True: 'red'})
     daily_score.write_html(f'/opt/airflow/files/processed/my_plot_{ds}.html')
+
+#### WIP Function
+def generate_summary(**context):
+    """Summarize scores by day & load them into BQ table"""
+    # [START bigquery_pandas_gbq_read_gbq_legacy]
+    client = bigquery.Client()
+    project_id = 'subject-screener-402918'
+    table_id = 'ssdataset.subject_scorest'
+    
+    query = """select subject, round(avg(score),2) as avg_score, DATE(datetime) as change_date from `subject-screener-402918.ssdataset.news-by-subject`
+        group by subject, change_date
+        order by subject, change_date;"""
+    
+    df2 = pandas_gbq.read_gbq(
+        query,
+        project_id=project_id,
+        # Set the dialect to "legacy" to use legacy SQL syntax. As of
+        # pandas-gbq version 0.10.0, the default dialect is "standard".
+        dialect="standard",
+    )
+    # [END bigquery_pandas_gbq_read_gbq_legacy]
+
+    job_config = bigquery.LoadJobConfig(
+        schema=[
+            bigquery.SchemaField("subject", bigquery.enums.SqlTypeNames.STRING),
+            bigquery.SchemaField("avg_score", bigquery.enums.SqlTypeNames.FLOAT),
+            bigquery.SchemaField("change_date", bigquery.enums.SqlTypeNames.DATE)], 
+            write_disposition="WRITE_APPEND")
+    
+    job = client.load_table_from_dataframe(df2, table_id, job_config=job_config)
+    job.result()
+
+    table = client.get_table(table_id)  # Make an API request.
+    print("Loaded {} rows and {} columns to {}".format(table.num_rows, len(table.schema), table_id))
