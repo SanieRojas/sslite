@@ -182,7 +182,10 @@ def view_scores(**context):
 
     print(average_score, mean_by_day)
 
-    daily_score = px.scatter(df, x="datetime", y="score", title = f"News Sentiment Scores by day. This topic has an average score of: {average_score}, being 1 mostly positive and -1 mostly negative", color=df['score'] < 0, color_discrete_map={False: 'blue', True: 'red'})
+    daily_score = px.scatter(df, x="datetime", y="score", 
+                             title = f"News Sentiment Scores by day. This topic has an average score of: {average_score}, being 1 mostly positive and -1 mostly negative", 
+                             color=df['score'] < 0, color_discrete_map={False: 'blue', True: 'red'}, 
+                             hover_data=[df['title']] )
     daily_score.write_html(f'/opt/airflow/files/processed/my_plot_{ds}.html')
 
 def generate_summary(**context):
