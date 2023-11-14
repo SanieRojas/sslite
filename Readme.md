@@ -149,9 +149,10 @@ CREATE TABLE `project_id.dataset_id.subject_scorest` (
 
 #Queries to the data through BiqQuery SQL Engine
 
-To calculate the average score by day of 
+To calculate the rolling 10 days average score per subject the following query is generated -> 
 ![Local Image](pictures/rolling_average_query.png)
 
+To showcase only the latest applicable average per subject, the last commented line should be uncommented. 
 
 ## Visualization 
 
@@ -161,3 +162,20 @@ The score of each new´s title is classified using blue for neutral or positive 
 
 Find below an example of analysis of "Israel Hamas Conflict" news. 
 ![Local Image](pictures/Visualization.png)
+
+
+## File and folder structure 
+
+Folders: 
+
+- Dags: contains the following python files: 
+  - dags.py : list the DAG instructions
+  - variables.py : list the variables to setup the research topic/subject. 
+  - functions.py : lists the functions used to process the file through the DAGs python operators. 
+  - tests.py: lists the test classes and functions tested through Github Workflows. 
+
+- Files: needs to be created on the root directory to hold the results locally 
+  - Processed: locally contains the parquet files & plots printed. 
+
+- Credentials: needs to be created on the root directory to hold any furter credentials required. However,GCP Json key file goes into Dags Folder. 
+
