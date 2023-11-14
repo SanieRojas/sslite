@@ -1,5 +1,5 @@
 my_variables = {
     '10d': '10d',
-    'neuralink': "neuralink"
+    'israel hamas conflict': 'israel hamas conflict'
 
 }

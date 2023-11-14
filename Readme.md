@@ -13,7 +13,7 @@ Its potential applications are cross-disciplinary:
 
 ## Overall Structure & Main Objective
 
-![Local Image](app_structure.png)
+![Local Image](pictures/app_structure.png)
 
 
 
@@ -77,7 +77,7 @@ The code represents a data pipeline within an Apache Airflow DAG, which automate
 Make sure to make your changes to the `variables.py` file to customize your searches. 
 
 ## DAG Graph 
-![Local Image](dag_graph.png)
+![Local Image](pictures/dag_graph.png)
 
 Four `PythonOperator` tasks are defined and linked together:
 
@@ -103,7 +103,7 @@ The tests stablished as per the current version are:
 
 When a push/pull request is submited, such tests are run to ensure new versions comply with overall processing objectives. See below the example of a successfull pull request notification in GitHub. 
 
-![Local Image](PR_succeded.png)
+![Local Image](pictures/PR_succeded.png)
 
 To merge changes from successfull pull requests make sure to execute the "Merge pull request" option through the Github UI or through command line, assuming your PR branch is called `pullreqs` by running the following commands: 
 
@@ -113,7 +113,7 @@ git merge pullreqs
 ```
 
 
-![Local Image](PR_merged.png)
+![Local Image](pictures/PR_merged.png)
 
 
 
@@ -146,3 +146,36 @@ CREATE TABLE `project_id.dataset_id.subject_scorest` (
   change_date DATE
 );
 ```
+
+#Queries to the data through BiqQuery SQL Engine
+
+To calculate the rolling 10 days average score per subject the following query is generated -> 
+![Local Image](pictures/rolling_average_query.png)
+
+To showcase only the latest applicable average per subject, the last commented line should be uncommented. 
+
+## Visualization 
+
+Plotly library is used to enable interactivity with the data displayed. Find below a preview of the HTML file generated with plotly, showcasing each data point score on an Y axis, throughout the available dates on X axis. 
+
+The score of each new´s title is classified using blue for neutral or positive news as per our analysis, as opposed to red for negative news. 
+
+Find below an example of analysis of "Israel Hamas Conflict" news. 
+![Local Image](pictures/Visualization.png)
+
+
+## File and folder structure 
+
+Folders: 
+
+- Dags: contains the following python files: 
+  - dags.py : list the DAG instructions
+  - variables.py : list the variables to setup the research topic/subject. 
+  - functions.py : lists the functions used to process the file through the DAGs python operators. 
+  - tests.py: lists the test classes and functions tested through Github Workflows. 
+
+- Files: needs to be created on the root directory to hold the results locally 
+  - Processed: locally contains the parquet files & plots printed. 
+
+- Credentials: needs to be created on the root directory to hold any furter credentials required. However,GCP Json key file goes into Dags Folder. 
+
