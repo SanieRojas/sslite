@@ -1,11 +1,9 @@
 ''' DAG to process extraction daily'''
 from datetime import datetime
-from functions import get_tokens, get_scores, extract_entities, setup_engine, save_to_gcs, load_to_bq, view_scores 
+from functions import setup_engine, save_to_gcs, load_to_bq, view_scores, generate_summary 
 from variables import my_variables
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.contrib.operators.gcs_to_bq import GoogleCloudStorageToBigQueryOperator
 
 ###################################################################################################################
 default_args = {
@@ -36,8 +34,14 @@ task3 = PythonOperator(task_id='load_to_bq',
                        provide_context=True,
                        dag=dag)
 
-task4 = PythonOperator(task_id='view_scores', 
+task4 = PythonOperator(task_id='generate_summary', 
+                       python_callable=generate_summary, 
+                       provide_context=True,
+                       dag=dag)
+
+task5 = PythonOperator(task_id='view_scores', 
                        python_callable=view_scores, 
                        dag=dag)
 
-task1 >> (task2, task3, task4)
+task1 >> (task2, task3, task5)
+task3 >> task4
