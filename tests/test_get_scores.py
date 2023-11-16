@@ -1,6 +1,7 @@
 '''testing the dataframe processing functions'''
 import unittest
 import pandas as pd
+import nltk
 from dags.functions import get_scores  
 
 
