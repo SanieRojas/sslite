@@ -6,6 +6,10 @@ from dags.functions import get_scores
 
 class TestGetScores(unittest.TestCase):
     ''' tests Get_Scores function '''
+    nltk.download(['stopwords', 'vader_lexicon', 'punkt'], quiet=True) 
+    nltk.download('maxent_ne_chunker', quiet=True)
+    nltk.download('words', quiet=True)
+    nltk.download('averaged_perceptron_tagger', quiet=True)
     #def test_empty_dataframe(self):
     #''' checks weather it will work with an empty dataframe'''
         #empty_df = pd.DataFrame()
