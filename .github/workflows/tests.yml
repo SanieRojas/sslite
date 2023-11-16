@@ -18,8 +18,8 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements_long.txt
+        pip install -r requirements_github.txt
 
     - name: Run Tests
       run: |
-        python dags/tests.py 
+        python -m pytest /tests
