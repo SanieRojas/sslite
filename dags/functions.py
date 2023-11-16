@@ -2,13 +2,15 @@ import re
 import nltk
 import pandas as pd
 import pandas_gbq
+import logging
+from datetime import datetime
 from GoogleNews import GoogleNews
 from google.cloud import bigquery, storage
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 import plotly.express as px
-from datetime import datetime
+
 
 def get_tokens(newsfeed):
 
@@ -80,15 +82,15 @@ def setup_engine(period, subject):
     assert newsfeed.shape[0] >= 1
     newsfeed["log_date"] = time_stamp
     newsfeed["subject"] = subject
-    print(newsfeed.dtypes)
-    print("That´s the imported and stamped dataset")
+    logging.info(f'{newsfeed.dtypes}')
+    logging.info("That´s the imported and stamped dataset")
     columns_to_remove = ['desc','site','link','img','media','log_date']
     columns_to_drop = [col for col in columns_to_remove if col in newsfeed.columns]
     newsfeed2 = newsfeed.drop(columns=columns_to_drop, axis=1)
     newsfeed2["tokens"] = newsfeed2["title"].apply(get_tokens)
     newsfeed2 = get_scores(newsfeed2)
-    print(newsfeed2.dtypes)
-    print("Types prior to typecasting")
+    logging.info(f'{newsfeed2.dtypes}')
+    logging.info("Types prior to typecasting")
     
     #setting data types
     newsfeed2['datetime'] = pd.to_datetime(newsfeed2['datetime'])
@@ -99,8 +101,8 @@ def setup_engine(period, subject):
     newsfeed2['tokens'] = newsfeed2['tokens'].astype(str)
     newsfeed2['score'] = newsfeed2['score'].astype(float)
 
-    print(newsfeed2.dtypes)
-    print("That´s the final saved dataset")
+    logging.info(f'{newsfeed2.dtypes}')
+    logging.info("That´s the final saved dataset")
 
     file_name = f'/opt/airflow/files/processed/raw_{subject}_{id}.parquet'
     newsfeed2.to_parquet(file_name, index=False)

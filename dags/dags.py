@@ -11,7 +11,6 @@ default_args = {
     'start_date': datetime(2023, 10, 29)
 }
 
-
 dag = DAG('first_dag_SR', 
           description='Extract data from API, load into pandas, save to GCS, and view scores by day',
           schedule_interval='0 12 * * *',

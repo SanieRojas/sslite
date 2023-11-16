@@ -1,7 +1,7 @@
 '''testing the dataframe processing functions'''
 import unittest
 import pandas as pd
-from functions import get_scores  
+from dags.functions import get_scores  
 
 
 class TestGetScores(unittest.TestCase):
