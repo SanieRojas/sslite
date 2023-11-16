@@ -1,10 +1,9 @@
 ''' DAG to process extraction daily'''
 from datetime import datetime
-from functions import get_tokens, get_scores, extract_entities, setup_engine, save_to_gcs, load_to_bq, view_scores, generate_summary 
+from functions import setup_engine, save_to_gcs, load_to_bq, view_scores, generate_summary 
 from variables import my_variables
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 ###################################################################################################################
 default_args = {

@@ -1,5 +1,5 @@
 my_variables = {
-    '20d': '20d',
-    'elecciones argentina': 'elecciones argentina'
+    '10d': '10d',
+    'massa': 'massa'
 
 }
