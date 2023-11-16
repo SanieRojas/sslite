@@ -22,4 +22,5 @@ jobs:
 
     - name: Run Tests
       run: |
-        python -m pytest /tests
+        python -m pytest ./tests/test_get_scores.py
+        python -m pytest ./tests/test_get_tokens.py
