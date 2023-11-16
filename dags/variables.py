@@ -1,5 +1,5 @@
 my_variables = {
-    '10d': '10d',
-    'israel hamas conflict': 'israel hamas conflict'
+    '20d': '20d',
+    'elecciones argentina': 'elecciones argentina'
 
 }

@@ -5,21 +5,18 @@ import pandas_gbq
 from GoogleNews import GoogleNews
 from google.cloud import bigquery, storage
 
-from nltk import ne_chunk, pos_tag
-from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk.tokenize import word_tokenize
-
-nltk.download(['stopwords', 'vader_lexicon', 'punkt'], quiet=True) 
-nltk.download('maxent_ne_chunker', quiet=True)
-nltk.download('words', quiet=True)
-nltk.download('averaged_perceptron_tagger', quiet=True)
 
 import plotly.express as px
 from datetime import datetime
 
 def get_tokens(newsfeed):
+
     """ Clean text."""
+    nltk.download(['stopwords', 'vader_lexicon', 'punkt'], quiet=True) 
+    nltk.download('maxent_ne_chunker', quiet=True)
+    nltk.download('words', quiet=True)
+    nltk.download('averaged_perceptron_tagger', quiet=True)
     my_stopwords = nltk.corpus.stopwords.words("english")
     cleaned_text = re.sub(r'[^a-zA-Z\s]', '', newsfeed).lower()
 
@@ -69,8 +66,7 @@ def setup_engine(period, subject):
     # Set up date
     id = str(datetime.now().timestamp())[:10]
     time_stamp = datetime.now().timestamp()
-    log_date = datetime.fromtimestamp(time_stamp) #CHANGE LATER TO CONTEXT ds
-
+    
     # Quick off instance
     api = GoogleNews()
     api.set_lang("en")
@@ -93,8 +89,8 @@ def setup_engine(period, subject):
     newsfeed2 = get_scores(newsfeed2)
     print(newsfeed2.dtypes)
     print("Types prior to typecasting")
-    #setting types
-
+    
+    #setting data types
     newsfeed2['datetime'] = pd.to_datetime(newsfeed2['datetime'])
 
     newsfeed2['title'] = newsfeed2['title'].astype(str)
@@ -107,12 +103,10 @@ def setup_engine(period, subject):
     print("That´s the final saved dataset")
 
     file_name = f'/opt/airflow/files/processed/raw_{subject}_{id}.parquet'
-    #file_name = f'raw_{subject}_{id}.parquet'
     newsfeed2.to_parquet(file_name, index=False)
 
     return file_name
-    #return newsfeed2
-    #fin
+   
 
 def save_to_gcs(**context):
     '''Set up a function to save the extraction into a GCS Bucket. 
@@ -130,7 +124,7 @@ def save_to_gcs(**context):
     bucket_name = "subject-screener1"
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
-    future_name = f"raw_data/data.parquet"
+    future_name = f"raw_data/data_{ds}.parquet"
     blob = bucket.blob(future_name)
     blob.upload_from_filename(file_name)
 
@@ -202,11 +196,8 @@ def generate_summary(**context):
     df2 = pandas_gbq.read_gbq(
         query,
         project_id=project_id,
-        # Set the dialect to "legacy" to use legacy SQL syntax. As of
-        # pandas-gbq version 0.10.0, the default dialect is "standard".
         dialect="standard",
     )
-    # [END bigquery_pandas_gbq_read_gbq_legacy]
 
     job_config = bigquery.LoadJobConfig(
         schema=[
