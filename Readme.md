@@ -48,8 +48,7 @@ The code uses a JSON extracted key file from Google Cloud Service. For further i
 
 Key considerations to implement this connection: 
 
-- The credentials json file must be located in the `/dags` folder. 
-- The `.gitignore` file must be updated to adjust for the name of your key file. 
+- The credentials json file must be located in the `/credentials` folder. 
 - The `docker-compose.yml` should be adjusted as well on parameter # GOOGLE_APPLICATION_CREDENTIALS 
 
 
