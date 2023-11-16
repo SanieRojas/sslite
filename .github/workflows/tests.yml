@@ -22,4 +22,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        python dags/tests.py 
+        python -m pytest /tests
